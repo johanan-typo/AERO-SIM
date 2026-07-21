@@ -1,0 +1,26 @@
+{
+  "name": "windows-drone-simulator",
+  "version": "1.0.0",
+  "description": "A multi-drone 3D flight simulator built using Electron and Three.js.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . DroneSimulator --platform=win32 --arch=x64 --out=dist --overwrite"
+  },
+  "keywords": [
+    "drone",
+    "simulator",
+    "threejs",
+    "electron",
+    "3d"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-packager": "^17.1.2"
+  }
+}

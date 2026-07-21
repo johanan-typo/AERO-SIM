@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Multi-Drone Flight Simulator</title>
+  <!-- Google Fonts for Futuristic HUD UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 3D Viewport -->
+  <div id="canvas-container"></div>
+
+  <!-- HUD UI Overlay -->
+  <div id="hud-container">
+    
+    <!-- Top Header Bar -->
+    <header class="hud-header glass-panel">
+      <div class="header-logo">
+        <span class="pulse-indicator"></span>
+        <h1>AERO-SIM <span class="accent-text">v1.0.0</span></h1>
+      </div>
+      <div class="simulation-status">
+        <span id="simulation-mode">SYSTEM READY</span>
+        <span class="divider">|</span>
+        <span id="fps-counter">60 FPS</span>
+      </div>
+    </header>
+
+    <!-- Left Telemetry Panel (Drone 1) -->
+    <section class="hud-panel left-panel glass-panel">
+      <h2 class="panel-title"><span class="neon-cyan-text">DRONE 01</span> TELEMETRY</h2>
+      
+      <div class="telemetry-grid">
+        <div class="telemetry-item">
+          <span class="label">ALTITUDE</span>
+          <span class="value" id="drone1-alt">0.00</span>
+          <span class="unit">M</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="label">SPEED</span>
+          <span class="value" id="drone1-speed">0.00</span>
+          <span class="unit">M/S</span>
+        </div>
+      </div>
+
+      <!-- Artificial Horizon / Roll & Pitch meters -->
+      <div class="attitude-indicator">
+        <div class="attitude-pitch">
+          <span class="label">PITCH:</span>
+          <span class="value font-mono" id="drone1-pitch">0°</span>
+        </div>
+        <div class="attitude-roll">
+          <span class="label">ROLL:</span>
+          <span class="value font-mono" id="drone1-roll">0°</span>
+        </div>
+        <div class="attitude-yaw">
+          <span class="label">YAW:</span>
+          <span class="value font-mono" id="drone1-yaw">0°</span>
+        </div>
+      </div>
+
+      <div class="position-stats">
+        <div><span class="label">POS X:</span> <span class="value font-mono" id="drone1-x">0.0</span></div>
+        <div><span class="label">POS Y:</span> <span class="value font-mono" id="drone1-y">0.0</span></div>
+        <div><span class="label">POS Z:</span> <span class="value font-mono" id="drone1-z">0.0</span></div>
+      </div>
+
+      <div class="control-source">
+        <span class="label">INPUT DEVICE:</span>
+        <span id="active-input-device" class="value text-warning">KEYBOARD</span>
+      </div>
+    </section>
+
+    <!-- Right Control Panel & Drones Tracker -->
+    <section class="hud-panel right-panel glass-panel">
+      <h2 class="panel-title">SYSTEMS TRACKER</h2>
+      
+      <div class="drone-tracker-list">
+        <div class="tracker-item active" id="tracker-drone1">
+          <div class="tracker-header">
+            <span class="drone-name"><span class="bullet cyan-bullet"></span>DRONE 01 (PILOT)</span>
+            <span class="drone-status cyan-text">MANUAL</span>
+          </div>
+          <div class="tracker-body">
+            <span>POS: <span id="tracker-d1-pos">0.0, 0.0, 0.0</span></span>
+          </div>
+        </div>
+
+        <div class="tracker-item" id="tracker-drone2">
+          <div class="tracker-header">
+            <span class="drone-name"><span class="bullet red-bullet"></span>DRONE 02 (AI)</span>
+            <span class="drone-status red-text">PATROL</span>
+          </div>
+          <div class="tracker-body">
+            <span>POS: <span id="tracker-d2-pos">0.0, 0.0, 0.0</span></span>
+          </div>
+        </div>
+
+        <div class="tracker-item" id="tracker-drone3">
+          <div class="tracker-header">
+            <span class="drone-name"><span class="bullet green-bullet"></span>DRONE 03 (AI)</span>
+            <span class="drone-status green-text">PATROL</span>
+          </div>
+          <div class="tracker-body">
+            <span>POS: <span id="tracker-d3-pos">0.0, 0.0, 0.0</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <h2 class="panel-title">CAMERA MODE</h2>
+      <div class="camera-controls">
+        <button id="cam-orbit" class="btn active">GLOBAL ORBIT</button>
+        <button id="cam-chase" class="btn">CHASE (3RD PERSON)</button>
+        <button id="cam-fpv" class="btn">FPV (1ST PERSON)</button>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <h2 class="panel-title">SIMULATION SETTINGS</h2>
+      <div class="settings-list">
+        <div class="setting-item">
+          <span class="label">GRID FLOOR</span>
+          <label class="switch">
+            <input type="checkbox" id="setting-grid" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <span class="label">AI PATROL SPEED</span>
+          <input type="range" id="setting-ai-speed" min="0.5" max="3" step="0.1" value="1.0">
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Controls & Gamepad Diagnostic Overlay -->
+    <footer class="hud-footer glass-panel">
+      <div class="footer-section keyboard-guide">
+        <h3>KEYBOARD CONTROLS</h3>
+        <div class="keys-display">
+          <div><kbd>W</kbd>/<kbd>S</kbd> <span>PITCH (FWD/BWD)</span></div>
+          <div><kbd>A</kbd>/<kbd>D</kbd> <span>ROLL (STRAFE L/R)</span></div>
+          <div><kbd>▲</kbd>/<kbd>▼</kbd> <span>ALTITUDE (UP/DOWN)</span></div>
+          <div><kbd>◀</kbd>/<kbd>▶</kbd> <span>YAW (ROTATE L/R)</span></div>
+        </div>
+      </div>
+
+      <div class="footer-divider"></div>
+
+      <div class="footer-section gamepad-diagnostic">
+        <h3>GAMEPAD DIAGNOSTIC</h3>
+        <div id="gamepad-status-display" class="gamepad-disconnected">
+          <span class="status-indicator"></span>
+          <span class="status-text">NO GAMEPAD CONNECTED</span>
+        </div>
+        <div id="gamepad-debug-meters" class="hidden">
+          <div class="meter-group">
+            <span class="meter-label">L-STICK (ALT/YAW)</span>
+            <div class="joystick-visualizer">
+              <div class="joystick-ring">
+                <div id="l-stick-dot" class="joystick-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="meter-group">
+            <span class="meter-label">R-STICK (PITCH/ROLL)</span>
+            <div class="joystick-visualizer">
+              <div class="joystick-ring">
+                <div id="r-stick-dot" class="joystick-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Configure ES Modules and Import Maps -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./node_modules/three/build/three.module.js",
+        "three/addons/": "./node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./renderer.js"></script>
+</body>
+</html>
